@@ -1,142 +1,100 @@
 package com.appclone.manager.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
+import com.appclone.manager.R
 import com.appclone.manager.engine.VirtualEngine
+import com.appclone.manager.engine.VirtualInstance
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
     val instances = VirtualEngine.getAllInstances()
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        stringResource(R.string.home_title),
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("settings") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("clone") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Text(
-                    text = "App Clone Manager",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                IconButton(onClick = { navController.navigate("settings") }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Clone")
+            }
+        }
+    ) { paddingValues ->
+        if (instances.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings"
+                        Icons.Default.LayersClear,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        stringResource(R.string.no_clones_yet),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Stats summary
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                modifier = Modifier.padding(paddingValues)
             ) {
-                StatCard(
-                    title = "Cloned Apps",
-                    value = instances.size.toString(),
-                    icon = Icons.Default.ContentCopy
-                )
-                StatCard(
-                    title = "Virtual Instances",
-                    value = instances.size.toString(),
-                    icon = Icons.Default.Dashboard
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Quick Actions
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            // Action Cards Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                ActionCard(
-                    title = "Clone App",
-                    subtitle = "Duplicate installed apps",
-                    icon = Icons.Default.ContentCopy,
-                    color = MaterialTheme.colorScheme.primary,
-                    onClick = { navController.navigate("clone") }
-                )
-                ActionCard(
-                    title = "Install APK",
-                    subtitle = "Install APK files",
-                    icon = Icons.Default.InstallMobile,
-                    color = MaterialTheme.colorScheme.secondary,
-                    onClick = { navController.navigate("installer") }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                ActionCard(
-                    title = "Play Store",
-                    subtitle = "Browse & install apps",
-                    icon = Icons.Default.Store,
-                    color = Color(0xFF4CAF50),
-                    onClick = { navController.navigate("playstore") }
-                )
-                ActionCard(
-                    title = "Managed Apps",
-                    subtitle = "View virtual instances",
-                    icon = Icons.Default.Apps,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    onClick = { navController.navigate("managed") }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Recently cloned apps
-            if (instances.isNotEmpty()) {
-                Text(
-                    text = "Cloned Apps",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                instances.take(5).forEach { instance ->
-                    ClonedAppItem(instance, onClick = {
+                items(instances) { instance ->
+                    ClonedAppIconItem(instance) {
                         instance.launch()
-                    })
-                    Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
@@ -144,146 +102,66 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-private fun StatCard(
-    title: String,
-    value: String,
-    icon: ImageVector
-) {
-    Card(
+fun ClonedAppIconItem(instance: VirtualInstance, onClick: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val icon = remember(instance) { instance.getAppIcon() }
+    
+    Column(
         modifier = Modifier
-            .width(160.dp)
-            .padding(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ActionCard(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    color: Color,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .width(160.dp)
-            .clickable(onClick = onClick)
-            .padding(4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = subtitle,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun ClonedAppItem(
-    instance: com.appclone.manager.engine.VirtualInstance,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
+            .width(80.dp)
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(8.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // App icon placeholder
+        Box(contentAlignment = Alignment.BottomEnd) {
             Surface(
-                modifier = Modifier.size(48.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
+                modifier = Modifier.size(60.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 2.dp
+            ) {
+                if (icon != null) {
+                    Image(
+                        bitmap = icon.toBitmap().asImageBitmap(),
+                        contentDescription = instance.getAppLabel(),
+                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Apps,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize().padding(12.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            
+            // Clone number badge
+            Surface(
+                modifier = Modifier.size(20.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Apps,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(28.dp)
+                    Text(
+                        text = instance.instanceId.toString(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = instance.getAppLabel(),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = "Clone #${instance.instanceId}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Launch",
-                tint = MaterialTheme.colorScheme.primary
-            )
         }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = instance.getAppLabel(),
+            fontSize = 11.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

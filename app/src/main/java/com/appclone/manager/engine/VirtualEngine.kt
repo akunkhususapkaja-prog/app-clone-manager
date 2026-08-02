@@ -2,6 +2,7 @@ package com.appclone.manager.engine
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,16 +15,6 @@ import java.io.IOException
 
 /**
  * VirtualEngine - Core virtual space engine for multi-instance app cloning.
- * 
- * This engine manages a virtual Android environment that allows running
- * multiple instances of the same application. Each instance is isolated
- * with its own data directory, shared preferences, and database.
- * 
- * Architecture:
- * - Each virtual instance runs in a separate process namespace
- * - Data isolation via separate file directories
- * - Package name manipulation for system compatibility
- * - Activity launching through virtual intent routing
  */
 object VirtualEngine {
 
@@ -31,13 +22,13 @@ object VirtualEngine {
     private const val VIRTUAL_DATA_DIR = "virtual_data"
     private const val VIRTUAL_APK_DIR = "virtual_apks"
     private const val VIRTUAL_PREFS_DIR = "virtual_prefs"
+    private const val PREFS_NAME = "virtual_engine_prefs"
+    private const val KEY_INSTANCES = "cloned_instances"
 
-    // Singleton instance
     private var initialized = false
     private var hostContext: Context? = null
-
-    // Track all virtual instances
     private val virtualInstances = mutableMapOf<String, VirtualInstance>()
+    private lateinit var prefs: SharedPreferences
 
     /**
      * Initialize the virtual engine
@@ -45,6 +36,7 @@ object VirtualEngine {
     fun initialize(context: Context): Boolean {
         if (initialized) return true
         hostContext = context.applicationContext
+        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val dataDir = File(context.applicationInfo.dataDir, VIRTUAL_DATA_DIR)
         if (!dataDir.exists()) {
@@ -61,64 +53,90 @@ object VirtualEngine {
             prefsDir.mkdirs()
         }
 
+        loadInstances()
         initialized = true
         Log.d(TAG, "VirtualEngine initialized successfully")
         return true
     }
 
-    /**
-     * Check if engine is initialized
-     */
+    private fun loadInstances() {
+        val savedInstances = prefs.getStringSet(KEY_INSTANCES, emptySet()) ?: emptySet()
+        virtualInstances.clear()
+        savedInstances.forEach { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) {
+                val pkg = parts[0]
+                val id = parts[1].toIntOrNull() ?: return@forEach
+                val instance = VirtualInstance(pkg, id)
+                virtualInstances["$pkg:$id"] = instance
+            }
+        }
+    }
+
+    private fun saveInstances() {
+        val set = virtualInstances.keys.toSet()
+        prefs.edit().putStringSet(KEY_INSTANCES, set).apply()
+    }
+
     fun isInitialized(): Boolean = initialized
 
-    /**
-     * Get the virtual data directory
-     */
     fun getVirtualDataDir(): File {
         val context = hostContext ?: throw IllegalStateException("VirtualEngine not initialized")
         return File(context.applicationInfo.dataDir, VIRTUAL_DATA_DIR)
     }
 
-    /**
-     * Get or create a virtual instance for an app
-     * 
-     * @param originalPackage original package name
-     * @param instanceId unique identifier for this clone instance
-     * @return VirtualInstance representing the cloned app
-     */
     fun getOrCreateInstance(originalPackage: String, instanceId: Int): VirtualInstance {
         val key = "$originalPackage:$instanceId"
-        return virtualInstances.getOrPut(key) {
+        val instance = virtualInstances.getOrPut(key) {
             VirtualInstance(originalPackage, instanceId)
         }
+        saveInstances()
+        return instance
     }
 
-    /**
-     * Get all virtual instances
-     */
     fun getAllInstances(): List<VirtualInstance> {
         return virtualInstances.values.toList()
     }
 
-    /**
-     * Get instances of a specific package
-     */
     fun getInstancesForPackage(packageName: String): List<VirtualInstance> {
         return virtualInstances.values.filter { it.originalPackage == packageName }
     }
 
     /**
-     * Remove a virtual instance
+     * Remove a virtual instance by its unique key (package:id) or virtualPackageId (package.clone.id)
      */
-    fun removeInstance(instanceId: String): Boolean {
-        val instance = virtualInstances.remove(instanceId) ?: return false
+    fun removeInstance(identifier: String): Boolean {
+        // Try to find the instance by either key format
+        val key = if (identifier.contains(".clone.")) {
+            val parts = identifier.split(".clone.")
+            if (parts.size == 2) "${parts[0]}:${parts[1]}" else identifier
+        } else {
+            identifier
+        }
+
+        val instance = virtualInstances.remove(key) ?: return false
         instance.cleanup()
+        saveInstances()
         return true
     }
 
-    /**
-     * Check if a package exists in the host system
-     */
+    fun removeAllInstances(): Boolean {
+        val instances = virtualInstances.values.toList()
+        instances.forEach { it.cleanup() }
+        virtualInstances.clear()
+        saveInstances()
+        return true
+    }
+
+    fun clearAllCache(): Boolean {
+        val dataDir = getVirtualDataDir()
+        return dataDir.walkTopDown().forEach { file ->
+            if (file.name == "cache" && file.isDirectory) {
+                file.deleteRecursively()
+            }
+        } != Unit
+    }
+
     fun isPackageInstalled(packageName: String): Boolean {
         val context = hostContext ?: return false
         return try {
@@ -129,9 +147,6 @@ object VirtualEngine {
         }
     }
 
-    /**
-     * Get application info for a package
-     */
     fun getApplicationInfo(packageName: String): ApplicationInfo? {
         val context = hostContext ?: return null
         return try {
@@ -141,9 +156,6 @@ object VirtualEngine {
         }
     }
 
-    /**
-     * Get all installed packages
-     */
     fun getInstalledPackages(): List<ApplicationInfo> {
         val context = hostContext ?: return emptyList()
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -155,8 +167,5 @@ object VirtualEngine {
         }
     }
 
-    /**
-     * Get the host context
-     */
     fun getHostContext(): Context? = hostContext
 }

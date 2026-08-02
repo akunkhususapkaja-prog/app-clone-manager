@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">App Clone Manager</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_install_apk">Install APK</string>
+    <string name="nav_managed_apps">Managed Apps</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">My Clones</string>
+    <string name="no_clones_yet">No cloned apps yet</string>
+    <string name="clone_number">Clone #%1$d</string>
+    
+    <!-- Settings -->
+    <string name="settings_general">General</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_dark_mode_sub">Enable dark theme across the app</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_sub">Allow cloned apps to show notifications</string>
+    <string name="settings_data_storage">Data &amp; Storage</string>
+    <string name="settings_clear_cache">Clear Cache</string>
+    <string name="settings_clear_cache_sub">Remove temporary files from all clones</string>
+    <string name="settings_delete_all">Delete All Clones</string>
+    <string name="settings_delete_all_sub">Remove all virtual instances and their data</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_delete">Delete</string>
+    <string name="dialog_clear">Clear</string>
+    <string name="dialog_delete_all_title">Delete All Clones?</string>
+    <string name="dialog_delete_all_msg">Are you sure you want to delete all cloned applications? This action cannot be undone.</string>
+    <string name="dialog_clear_cache_title">Clear Cache?</string>
+    <string name="dialog_clear_cache_msg">This will clear cache for all cloned applications. Continue?</string>
+    
+    <!-- Actions -->
+    <string name="action_clone_app">Clone App</string>
+    <string name="action_install_apk">Install APK File</string>
+    <string name="action_managed_apps">Managed Apps</string>
+    <string name="action_play_store">Play Store</string>
 </resources>

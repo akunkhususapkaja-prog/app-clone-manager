@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">App Clone Manager</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Beranda</string>
+    <string name="nav_install_apk">Pasang APK</string>
+    <string name="nav_managed_apps">Kelola Aplikasi</string>
+    <string name="nav_settings">Pengaturan</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">Klon Saya</string>
+    <string name="no_clones_yet">Belum ada aplikasi klon</string>
+    <string name="clone_number">Klon #%1$d</string>
+    
+    <!-- Settings -->
+    <string name="settings_general">Umum</string>
+    <string name="settings_dark_mode">Mode Gelap</string>
+    <string name="settings_dark_mode_sub">Aktifkan tema gelap di seluruh aplikasi</string>
+    <string name="settings_notifications">Notifikasi</string>
+    <string name="settings_notifications_sub">Izinkan aplikasi klon menampilkan notifikasi</string>
+    <string name="settings_data_storage">Data &amp; Penyimpanan</string>
+    <string name="settings_clear_cache">Bersihkan Cache</string>
+    <string name="settings_clear_cache_sub">Hapus file sementara dari semua klon</string>
+    <string name="settings_delete_all">Hapus Semua Klon</string>
+    <string name="settings_delete_all_sub">Hapus semua instans virtual dan datanya</string>
+    <string name="settings_about">Tentang</string>
+    <string name="settings_version">Versi</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_confirm">Konfirmasi</string>
+    <string name="dialog_cancel">Batal</string>
+    <string name="dialog_delete">Hapus</string>
+    <string name="dialog_clear">Bersihkan</string>
+    <string name="dialog_delete_all_title">Hapus Semua Klon?</string>
+    <string name="dialog_delete_all_msg">Apakah Anda yakin ingin menghapus semua aplikasi klon? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="dialog_clear_cache_title">Bersihkan Cache?</string>
+    <string name="dialog_clear_cache_msg">Ini akan menghapus cache untuk semua aplikasi klon. Lanjutkan?</string>
+    
+    <!-- Actions -->
+    <string name="action_clone_app">Klon Aplikasi</string>
+    <string name="action_install_apk">Pasang File APK</string>
+    <string name="action_managed_apps">Kelola Aplikasi</string>
+    <string name="action_play_store">Play Store</string>
+</resources>
