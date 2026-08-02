@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -212,8 +213,17 @@ private fun AppItemCard(
         ) {
             // App icon
             if (icon != null) {
+                val bitmap = android.graphics.Bitmap.createBitmap(
+                    icon.intrinsicWidth.takeIf { it > 0 } ?: 48,
+                    icon.intrinsicHeight.takeIf { it > 0 } ?: 48,
+                    android.graphics.Bitmap.Config.ARGB_8888
+                ).also { bmp ->
+                    val canvas = android.graphics.Canvas(bmp)
+                    icon.setBounds(0, 0, canvas.width, canvas.height)
+                    icon.draw(canvas)
+                }
                 androidx.compose.foundation.Image(
-                    bitmap = icon.asImageBitmap(),
+                    bitmap = bitmap.asImageBitmap(),
                     contentDescription = null,
                     modifier = Modifier.size(48.dp)
                 )
