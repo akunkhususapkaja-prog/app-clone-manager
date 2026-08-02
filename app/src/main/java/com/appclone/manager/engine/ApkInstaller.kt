@@ -44,7 +44,6 @@ object ApkInstaller {
     fun parseApk(apkFile: File): ApkInfo? {
         return try {
             val apkParser = ApkFile(apkFile)
-            val metaInfo = apkParser.metaInfo
             val manifest = apkParser.apkMeta
 
             ApkInfo(

@@ -43,8 +43,6 @@ fun ApkInstallerScreen(navController: NavController) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            // Copy selected APK to our storage
-            val context = LocalContext.current
             try {
                 context.contentResolver.openInputStream(uri)?.use { input ->
                     val fileName = "custom_apk_${System.currentTimeMillis()}.apk"

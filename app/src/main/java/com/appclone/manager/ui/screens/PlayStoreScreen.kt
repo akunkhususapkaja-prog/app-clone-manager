@@ -4,6 +4,8 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,6 +22,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.appclone.manager.engine.PlayStoreIntegration
 import com.appclone.manager.engine.VirtualEngine
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +35,7 @@ fun PlayStoreScreen(navController: NavController) {
         "Featured" to Icons.Default.Star,
         "Top Charts" to Icons.Default.TrendingUp,
         "Categories" to Icons.Default.Category,
-        "Editor's Choice" to Icons.Default.EditorChoice
+        "Editor Choice" to Icons.Default.Work
     )
 
     Scaffold(
@@ -56,14 +59,12 @@ fun PlayStoreScreen(navController: NavController) {
                     }
                 },
                 actions = {
-                    // Toggle between embedded and direct Play Store
                     IconButton(onClick = { showDirectPlayStore = !showDirectPlayStore }) {
                         Icon(
                             if (showDirectPlayStore) Icons.Default.OpenInBrowser else Icons.Default.Web,
                             contentDescription = if (showDirectPlayStore) "Open in Play Store app" else "Open embedded"
                         )
                     }
-                    // Open Play Store app directly
                     IconButton(onClick = {
                         PlayStoreIntegration.openPlayStoreForApp(context, "com.google.android.apps.docs")
                     }) {
@@ -78,7 +79,6 @@ fun PlayStoreScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Info banner
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +108,6 @@ fun PlayStoreScreen(navController: NavController) {
                 }
             }
 
-            // Virtual engine status
             if (VirtualEngine.isInitialized()) {
                 Surface(
                     modifier = Modifier
@@ -138,7 +137,6 @@ fun PlayStoreScreen(navController: NavController) {
                 }
             }
 
-            // Category tabs
             ScrollableTabRow(
                 selectedTabIndex = categories.indexOfFirst { it.first == selectedCategory }.coerceAtLeast(0),
                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -173,12 +171,11 @@ fun PlayStoreScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Category content
             when (selectedCategory) {
                 "Featured" -> FeaturedSection(context, showDirectPlayStore)
                 "Top Charts" -> TopChartsSection(context)
                 "Categories" -> CategoriesSection(context)
-                "Editor's Choice" -> EditorsChoiceSection(context)
+                "Editor Choice" -> EditorsChoiceSection(context)
             }
         }
     }
@@ -213,8 +210,7 @@ private fun FeaturedSection(context: android.content.Context, useDirectLink: Boo
             )
         }
 
-        items(featuredApps.size) { index ->
-            val (name, packageName) = featuredApps[index]
+        items(featuredApps) { (name, packageName) ->
             FeaturedAppItem(
                 name = name,
                 packageName = packageName,
@@ -241,20 +237,19 @@ private fun FeaturedAppItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App icon placeholder with color
             val colors = listOf(
-                Color(0xFF25D366), // WhatsApp green
-                Color(0xFFE1306C), // Instagram pink
-                Color(0xFF1877F2), // Facebook blue
-                Color(0xFF000000), // TikTok black
-                Color(0xFF0088CC), // Telegram blue
-                Color(0xFF1DB954), // Spotify green
-                Color(0xFFE50914), // Netflix red
-                Color(0xFF4285F4), // Google Maps blue
-                Color(0xFFFF0000), // YouTube red
-                Color(0xFF1DA1F2)  // Twitter blue
+                Color(0xFF25D366),
+                Color(0xFFE1306C),
+                Color(0xFF1877F2),
+                Color(0xFF000000),
+                Color(0xFF0088CC),
+                Color(0xFF1DB954),
+                Color(0xFFE50914),
+                Color(0xFF4285F4),
+                Color(0xFFFF0000),
+                Color(0xFF1DA1F2)
             )
-            val colorIndex = name.hashCode().abs() % colors.size
+            val colorIndex = abs(name.hashCode()) % colors.size
             val iconColor = colors[colorIndex]
 
             Surface(
@@ -335,8 +330,7 @@ private fun TopChartsSection(context: android.content.Context) {
             )
         }
 
-        items(topApps.size) { index ->
-            val (name, packageName) = topApps[index]
+        items(topApps) { (name, packageName) ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -344,7 +338,7 @@ private fun TopChartsSection(context: android.content.Context) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${index + 1}",
+                    text = "${topApps.indexOf(name to packageName) + 1}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -401,8 +395,7 @@ private fun CategoriesSection(context: android.content.Context) {
             )
         }
 
-        items(categories.size) { index ->
-            val (name, icon) = categories[index]
+        items(categories) { (name, icon) ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -460,14 +453,13 @@ private fun EditorsChoiceSection(context: android.content.Context) {
     ) {
         item {
             Text(
-                text = "Editor's Choice",
+                text = "Editor Choice",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        items(editorsChoice.size) { index ->
-            val (name, packageName) = editorsChoice[index]
+        items(editorsChoice) { (name, packageName) ->
             FeaturedAppItem(name, packageName, context)
         }
     }
