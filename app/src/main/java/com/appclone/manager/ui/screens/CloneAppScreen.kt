@@ -1,6 +1,8 @@
 package com.appclone.manager.ui.screens
 
 import android.content.pm.ApplicationInfo
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
 import com.appclone.manager.R
 import com.appclone.manager.engine.ApkInstaller
@@ -156,6 +157,22 @@ private fun AppItemCard(
     icon: android.graphics.drawable.Drawable?,
     onClick: () -> Unit
 ) {
+    val imageBitmap = remember(icon) {
+        icon?.let {
+            try {
+                val width = it.intrinsicWidth.takeIf { w -> w > 0 } ?: 100
+                val height = it.intrinsicHeight.takeIf { h -> h > 0 } ?: 100
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                it.setBounds(0, 0, canvas.width, canvas.height)
+                it.draw(canvas)
+                bitmap.asImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp)
@@ -169,9 +186,9 @@ private fun AppItemCard(
                 shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                if (icon != null) {
+                if (imageBitmap != null) {
                     Image(
-                        bitmap = icon.toBitmap().asImageBitmap(),
+                        bitmap = imageBitmap,
                         contentDescription = null,
                         modifier = Modifier.padding(6.dp),
                         contentScale = ContentScale.Fit

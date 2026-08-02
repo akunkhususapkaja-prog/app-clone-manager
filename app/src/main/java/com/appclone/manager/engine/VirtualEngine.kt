@@ -130,11 +130,15 @@ object VirtualEngine {
 
     fun clearAllCache(): Boolean {
         val dataDir = getVirtualDataDir()
-        return dataDir.walkTopDown().forEach { file ->
+        var success = true
+        dataDir.walkTopDown().forEach { file ->
             if (file.name == "cache" && file.isDirectory) {
-                file.deleteRecursively()
+                if (!file.deleteRecursively()) {
+                    success = false
+                }
             }
-        } != Unit
+        }
+        return success
     }
 
     fun isPackageInstalled(packageName: String): Boolean {

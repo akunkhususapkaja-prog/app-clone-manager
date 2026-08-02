@@ -158,7 +158,7 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
         content()
-        HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+        Divider(modifier = Modifier.padding(top = 8.dp))
     }
 }
 
